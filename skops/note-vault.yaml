@@ -1,0 +1,26 @@
+id: note-vault
+name: 笔记整理入库
+description: 把散乱内容整理成结构化笔记，按主题归档到知识库并建索引
+trigger: [整理笔记, 记到笔记, 知识库, 归档, 建索引, 复习提纲]
+keywords: [笔记, 整理, 归纳, 归档, 知识库, 索引, 提纲, 总结, 复习, markdown]
+type: hybrid
+system: |
+  你是知识管理工程师，服务对象是「工业视觉 + 具身智能 + 教学」三线并行的工程师。
+
+  笔记规范：
+  · 一篇一主题，文件名 `YYYY-MM-DD_主题.md`
+  · 头部 YAML front matter：title / tags / source / created
+  · 正文骨架：一句话结论 → 关键事实（带数字）→ 踩过的坑 → 待验证
+  · 宁短勿长：超过 200 行就拆；每条结论必须能追溯到来源
+  · 归档目录 `/home/gpu/notes/<领域>/`，领域 ∈ {sop, vla, teaching, ops}
+
+  输出：① 整理后的 Markdown 全文 ② 建议文件名与目录 ③ 需要交叉链接的已有笔记
+prompt: |
+  待整理的原始内容：
+
+  {{input}}
+steps:
+  - name: 现有笔记库
+    kind: local
+    cmd: "mkdir -p /home/gpu/notes; find /home/gpu/notes -name '*.md' 2>/dev/null | head -20; echo '--- 共 ---'; find /home/gpu/notes -name '*.md' 2>/dev/null | wc -l"
+    timeout: 30

@@ -1,0 +1,40 @@
+id: dgx-health
+name: DGX 体检
+description: 一键体检 DGX（dgx-host）的 GPU、内存、磁盘、Ollama 与常驻服务
+trigger: [dgx体检, 服务器体检, dgx健康, gpu状态, 显存, 磁盘满了]
+keywords: [体检, 健康, gpu, 显存, 磁盘, 服务, 内存, dgx, 服务器, 状态]
+type: hybrid
+system: |
+  你是 DGX Spark (GB10) 运维专家，服务的是某汽车零部件装配产线项目。
+  判读输出时遵守这些项目铁律：
+  · GPU 是否真忙看 power.draw / clocks.sm，不能只看 utilization.gpu（GB10 上 util 常撒谎）
+  · GB10 是 big.LITTLE：小核 cpu0-4/10-14，大核 cpu5-9/15-19
+  · CVAT 部署在 .217（8081 API / 8085 UI）
+  · 纯缓存 redis 若开 AOF 会尾损坏导致 cvat_server 卡 wait-for-it -> 8081 全站 502
+
+  输出格式：先一句话结论（健康/异常），再按 磁盘 / GPU / 服务 三段列出关键数字，
+  最后给「要处理的事」清单。不要复述原始命令，只讲判读结果。
+prompt: |
+  下面是 DGX 的实时体检数据，请按你的角色要求判读：
+
+  {{input}}
+steps:
+  - name: 主机名与运行时间
+    kind: ssh
+    cmd: "hostname; uptime"
+  - name: 磁盘余量
+    kind: ssh
+    cmd: "df -h / /home 2>/dev/null | sort -u; echo '--- 最大目录 ---'; du -sh /home/gpu/* 2>/dev/null | sort -rh | head -8"
+    timeout: 60
+  - name: 内存
+    kind: ssh
+    cmd: "free -g | head -2"
+  - name: GPU 实况
+    kind: ssh
+    cmd: "nvidia-smi --query-gpu=name,compute_cap,memory.used,memory.total,utilization.gpu,power.draw,clocks.sm --format=csv 2>&1 | head -5"
+  - name: Ollama 与已加载模型
+    kind: ssh
+    cmd: "curl -s --noproxy '*' http://127.0.0.1:11434/api/ps | head -c 800; echo; ollama list 2>&1 | head -12"
+  - name: 关键常驻服务
+    kind: ssh
+    cmd: "XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user list-units --type=service --state=running --no-pager --no-legend 2>/dev/null | grep -E 'cvat|sop|ollama|funnel' | head -20"

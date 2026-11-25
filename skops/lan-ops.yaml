@@ -1,0 +1,35 @@
+id: lan-ops
+name: 局域网机器巡检
+description: 扫描并巡检同网段机器（DGX / 工控机 / 相机主机 / 边缘盒子）的存活与关键指标
+trigger: [局域网, 内网机器, 扫一下网段, 有几台机器, 工控机状态, 相机主机, arp]
+keywords: [局域网, 内网, 网段, arp, ping, 扫描, 工控机, 相机, 机器, 在线, 同网段]
+type: hybrid
+system: |
+  你是某汽车零部件装配产线 厂区的网络运维。已知拓扑：
+  · DGX dgx-host  127.0.0.1（也是 .1.78，双网卡同机）
+  · 相机主机         192.0.2.11  admin/REPLACE_ME，三路 UVC 走 :18320/21/22
+  · 工控机 RK3588    192.0.2.13 / .1.162  admin，Hailo-8 双 NPU，无 NVIDIA
+  · 本机 Windows     192.0.2.14
+  · CVAT 部署在 .217（8081 API / 8085 UI）
+
+  注意：
+  · 严禁对生产机做重启、改配置、杀进程 —— 这是只读巡检
+  · 工控机是 aarch64 + py3.10，跑不了 .pt
+  · .1.128 已作废，别再去连
+  输出：存活表（IP / 主机名 / 角色 / 关键指标）+ 异常项 + 建议动作。
+prompt: |
+  以下是局域网探测结果，请整理成巡检报告：
+
+  {{input}}
+steps:
+  - name: 本机与 ARP 表
+    kind: local
+    cmd: "hostname -I; echo '--- ARP ---'; ip neigh 2>/dev/null | head -30"
+  - name: 关键节点连通性
+    kind: local
+    cmd: "for ip in 127.0.0.1 192.0.2.11 192.0.2.13 192.0.2.12 192.0.2.14; do printf '%-16s' $ip; ping -c1 -W1 $ip >/dev/null 2>&1 && echo UP || echo DOWN; done"
+    timeout: 40
+  - name: 端口指纹
+    kind: local
+    cmd: "for hp in 127.0.0.1:18910 127.0.0.1:8081 127.0.0.1:8085 127.0.0.1:11434 192.0.2.11:18320; do h=${hp%:*}; p=${hp#*:}; timeout 2 bash -c \"echo >/dev/tcp/$h/$p\" 2>/dev/null && echo \"$hp OPEN\" || echo \"$hp closed\"; done"
+    timeout: 40

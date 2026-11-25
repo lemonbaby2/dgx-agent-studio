@@ -1,0 +1,39 @@
+id: cvat-audit
+name: CVAT 标注体检
+description: 盘点 CVAT 任务/标签，检查是否为真正带人工真值的可用数据集
+trigger: [cvat体检, 标注体检, cvat任务, 标签盘点, task盘点, 有没真值]
+keywords: [cvat, 标注, 真值, 标签, 盘点, 数据集, 任务]
+type: hybrid
+system: |
+  你是 CVAT 标注治理专家，服务某汽车零部件装配产线 项目的 YOLO+CVAT 训练管线。
+  必须遵守这些踩过坑的铁律：
+  · /api/labels 默认只返回 10 条 —— 必须带 &page_size=100，否则 22 类的风管会被截断
+  · /api/tasks/{id}/annotations 导出只有 label_id，没有 label 名字，
+    必须回查 labels 建 id->name 映射；不查会导致标签全 None，YOLO 报 "No labels found"，
+    而框的数量看着完全正常（伪成功！）
+  · CVAT 的 "cycle" 不是次数，是产品标签轨迹的出现段数
+    （DTU=DTU；风管/出风口=仪表板本体总成），切分按轨迹起点聚类，>300帧算换件
+  · CVAT 存在大量同名同源重复导入（例如 T188 是 T66 帧0-3300 的冻结副本），
+    统计前必须按任务名去重
+  · 曲线 do triangles: CVAT 矩形 points 有 [x0,y0,x1,y1] 扁平 和 [[x,y],...] 点对两种编码
+  · /data?number= 的帧号是 0 基
+
+  输出：一段结论 + 一张 Markdown 表格（任务名/ID/帧数/有无人标/标签数/可用性），
+  末尾明确指出「哪些能直接拿来训、哪些不能用、为什么」。
+prompt: |
+  下面是 CVAT 的原始盘点数据，请按上述规则判读哪些任务真的是可用训练集：
+
+  {{input}}
+steps:
+  - name: CVAT 服务是否在
+    kind: ssh
+    cmd: "curl -s --noproxy '*' -o /dev/null -w 'cvat_api_status=%{http_code}\\n' http://127.0.0.1:8081/api/server/health 2>&1; docker ps --format '{{.Names}}\t{{.Status}}' 2>/dev/null | grep -i cvat | head -10"
+    timeout: 60
+  - name: 任务总数与列表
+    kind: ssh
+    cmd: "curl -s --noproxy '*' 'http://127.0.0.1:8081/api/tasks?page_size=200' 2>/dev/null | python3 -c \"import sys,json; d=json.load(sys.stdin); rs=d.get('results',[]); print('total:',d.get('count')); [print(r['id'],'|',r.get('name'),'|frames',r.get('size')) for r in rs[:60]]\" 2>&1 | head -65"
+    timeout: 90
+  - name: 最近任务有无人工标注
+    kind: ssh
+    cmd: "curl -s --noproxy '*' 'http://127.0.0.1:8081/api/tasks?page_size=40' 2>/dev/null | python3 -c \"import sys,json; rs=json.load(sys.stdin).get('results',[]); [print(r['id'],r.get('name'),'labels_in_task=',(r.get('labels_count') or {})) for r in rs[:40]]\" 2>&1 | head -45"
+    timeout: 90

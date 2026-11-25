@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.log
+*.bak
+*.bak.*
+models/
+dist/
+build/
+_release/
+*.spec.bak
+.DS_Store
+Thumbs.db

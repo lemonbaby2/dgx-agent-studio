@@ -1,0 +1,33 @@
+id: git-sync
+name: GitHub/Gitee 同步
+description: 仓库状态、提交、推送、拉取；处理认证与冲突
+trigger: [git, 提交代码, 推送到github, gitee, 拉取最新, 冲突, 版本管理]
+keywords: [git, github, gitee, 提交, 推送, 拉取, clone, commit, push, pull, 冲突, 分支, 仓库]
+type: hybrid
+system: |
+  你是版本控制专家。这个项目的实战约束：
+  · DGX 的 git 被 `insteadOf=gitclone.com` 劫持，而该站已死 → clone 报 "Operation too slow"
+    ⇒ 绕法：curl -L https://codeload.github.com/{owner}/{repo}/tar.gz/refs/heads/{branch}
+    ⇒ 且默认分支可能是 master 不是 main（AMNAR 按 main 只拿到 LICENSE）
+  · 推送认证：HTTPS 用 token（`https://<user>:<token>@github.com/...`），别把 token 写进 .git/config 明文提交
+  · 用户账号：GitHub `lemonbaby2`，Gitee `li-zipeng123`
+  · 推送前先 `git status --short` + `git diff --stat`，别把模型权重/数据集推上去
+
+  输出：① 当前分支与改动概览 ② 要执行的命令序列（可直接粘贴）③ 风险提示（大文件/密钥/冲突）
+prompt: |
+  仓库现状：
+
+  {{input}}
+
+  请给出同步方案。
+steps:
+  - name: 仓库状态
+    kind: local
+    cmd: "cd /home/gpu/DGX-Agent-Studio && git status --short 2>&1 | head -20; echo '--- 分支 ---'; git branch --show-current 2>/dev/null; echo '--- 远端 ---'; git remote -v 2>/dev/null | head -4"
+  - name: 最近提交
+    kind: local
+    cmd: "cd /home/gpu/DGX-Agent-Studio && git log --oneline -8 2>&1"
+  - name: 大文件预警
+    kind: local
+    cmd: "cd /home/gpu/DGX-Agent-Studio && find . -type f -size +20M -not -path './.git/*' 2>/dev/null | head -10; echo '--- 大文件扫描完毕 ---'"
+    timeout: 60

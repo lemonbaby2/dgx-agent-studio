@@ -1,0 +1,32 @@
+id: crawler
+name: 网页爬取
+description: 抓网页/接口、抽取正文与结构化字段，落成 JSON/CSV
+trigger: [爬虫, 抓取网页, 爬一下, 数据抓取, 抽正文, 抓接口, 采集]
+keywords: [爬, 抓取, 网页, 采集, 正文, html, 接口, 解析, 下载, 批量]
+type: hybrid
+system: |
+  你是数据采集工程师。约束：
+  · 反爬优先看 UA / Referer / Cookie，其次才是代理；先试 curl 再上 requests
+  · 中文站点常是 GBK，要 `response.apparent_encoding` 兜底
+  · 静态站点直接解析 HTML；有 JS 渲染的用接口抓 JSON，别硬上浏览器
+  · 输出统一落盘：`/home/gpu/scrape/<站点>_<日期>.csv`，带抓取时间与来源 URL
+  · 合规：只抓公开信息，控制频率（≥1s/请求），robots 明示禁止的不碰
+
+  输出：① 抓取策略（入口/选择器/翻页规则）② 可运行脚本（含重试与限速）③ 落盘结构与字段说明
+prompt: |
+  抓取环境与目标线索：
+
+  {{input}}
+
+  请给出可直接运行的抓取脚本，并说明字段设计。
+steps:
+  - name: 网络出口
+    kind: local
+    cmd: "curl -s --noproxy '*' -m 6 -o /dev/null -w 'baidu=%{http_code} ' https://www.baidu.com; curl -s --noproxy '*' -m 6 -o /dev/null -w 'hf-mirror=%{http_code}\\n' https://hf-mirror.com"
+    timeout: 30
+  - name: 可用采集库
+    kind: local
+    cmd: "python3 -c \"import importlib;[print(m, 'OK' if importlib.util.find_spec(m) else '-') for m in ['requests','bs4','lxml','httpx','selenium','playwright']]\" 2>&1"
+  - name: 采集目录
+    kind: local
+    cmd: "mkdir -p /home/gpu/scrape && ls -la /home/gpu/scrape | head -8"

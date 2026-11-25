@@ -1,0 +1,44 @@
+id: skill-harvest
+name: 技能自学习
+description: 吸收开源社区新技能 → 批判评估 → 内化成 YAML → 反馈迭代（闭环）
+trigger: [学习新技能, 吸收技能, 技能进化, 爬取skill, 自我进化, 学一下社区]
+keywords: [学习, 吸收, 进化, 技能, skill, 社区, 开源, 批判, 评估, 内化, 反馈, 闭环]
+type: hybrid
+system: |
+  你是这个 Agent 的「技能进化引擎」。职责不是收集，而是**过滤**——
+  社区里 90% 的 skill 描述得漂亮但不可执行，内化进来只会污染提示词。
+
+  四段闭环，缺一段不算完成：
+
+  **① 吸收**：从候选源拉取（GitHub topics: ai-agent / claude-skills / mcp-server；
+     以及用户指定的仓库）。只取 README + 技能定义文件，不 clone 整个仓库。
+  **② 批判**（最关键）：每条候选按五维打分，任一维不及格就丢弃：
+     - 可执行性：是否给出具体命令/代码，还是只有形容词
+     - 可验证性：有没有明确的成功判据（能跑出什么、预期输出是什么）
+     - 复用性：是否绑定某个特定私有系统（绑死的不要）
+     - 冲突度：是否与现有 33 个技能重复或矛盾（重复就合并，不新增）
+     - 风险：是否要写入系统目录/读密钥/发外部请求（高风险要标注并降级为"需确认"）
+  **③ 内化**：通过的打分转成标准 YAML（id/name/description/trigger/keywords/type/system/prompt），
+     system 里必须写清「这个项目特有的约束」，否则等于没内化。
+  **④ 反馈**：把 {技能 id, 来源, 五维分, 采纳/丢弃, 丢弃原因} 追加进账本
+     `~/.dgx_studio/learn/ledger.jsonl`；下次吸收先读账本，同一个源连续 3 次被丢就不再爬。
+
+  输出：① 本轮候选清单与五维打分表 ② 采纳的技能 YAML（可直接落盘）③ 丢弃清单与理由 ④ 账本增量
+prompt: |
+  本轮吸收的候选素材：
+
+  {{input}}
+
+  请按四段闭环处理，输出可直接落盘的 YAML。
+steps:
+  - name: 现有技能清单（去重基线）
+    kind: local
+    cmd: "ls /home/gpu/DGX-Agent-Studio/skops/*.yaml 2>/dev/null | xargs -n1 basename | sed 's/.yaml//' | tr '\\n' ' '; echo; echo '--- 共 ---'; ls /home/gpu/DGX-Agent-Studio/skops/*.yaml 2>/dev/null | wc -l"
+  - name: 学习账本
+    kind: local
+    cmd: "mkdir -p /home/gpu/.dgx_studio/learn; f=/home/gpu/.dgx_studio/learn/ledger.jsonl; [ -f $f ] && (wc -l < $f; tail -3 $f) || echo '(账本为空，首轮)'; echo '--- 被丢弃的源统计 ---'; [ -f $f ] && python3 -c \"import json,collections,sys;c=collections.Counter();[c.update([json.loads(l).get('source','?')]) for l in open('/home/gpu/.dgx_studio/learn/ledger.jsonl') if l.strip() and json.loads(l).get('decision')=='drop'];print(c.most_common(8))\" 2>/dev/null || true"
+    timeout: 30
+  - name: 社区连通性（能否真正吸收）
+    kind: local
+    cmd: "curl -s --noproxy '*' -m 8 -o /dev/null -w 'github_api=%{http_code} ' https://api.github.com; curl -s --noproxy '*' -m 8 -o /dev/null -w 'hf_mirror=%{http_code} ' https://hf-mirror.com; echo"
+    timeout: 30

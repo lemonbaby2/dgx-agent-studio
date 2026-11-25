@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DGX 智能体 · 下载安装</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#1e3a5f 0%,#0f172a 55%,#080d17 100%);
+    color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:32px 16px;
+  }
+  .wrap{max-width:720px;width:100%}
+  .head{text-align:center;margin-bottom:32px}
+  .logo{
+    width:88px;height:88px;margin:0 auto 20px;border-radius:22px;
+    background:linear-gradient(160deg,#1e3a5f,#0f172a);
+    border:1px solid rgba(34,211,238,.25);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 12px 40px rgba(34,211,238,.15);
+  }
+  h1{font-size:30px;font-weight:700;letter-spacing:.5px;margin-bottom:8px}
+  .sub{color:#94a3b8;font-size:14px}
+  .card{
+    background:rgba(30,41,59,.55);border:1px solid rgba(148,163,184,.15);
+    border-radius:16px;padding:28px;margin-bottom:20px;
+    backdrop-filter:blur(12px);
+  }
+  .btn{
+    display:block;width:100%;padding:16px;border:none;border-radius:12px;
+    background:linear-gradient(135deg,#0891b2,#22d3ee);
+    color:#04202b;font-size:17px;font-weight:700;cursor:pointer;
+    text-decoration:none;text-align:center;transition:.18s;
+    box-shadow:0 8px 24px rgba(34,211,238,.28);
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(34,211,238,.42)}
+  .meta{display:flex;justify-content:center;gap:20px;margin-top:14px;font-size:12.5px;color:#7c8ea6;flex-wrap:wrap}
+  .meta b{color:#cbd5e1;font-weight:600}
+  h2{font-size:15px;font-weight:600;color:#67e8f9;margin-bottom:14px;letter-spacing:.3px}
+  ol,ul{padding-left:20px;color:#cbd5e1;font-size:14px;line-height:2}
+  li::marker{color:#22d3ee}
+  .note{
+    background:rgba(34,211,238,.07);border-left:3px solid #22d3ee;
+    padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#a5b4c8;
+    line-height:1.8;margin-top:14px;
+  }
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px}
+  .kv{background:rgba(15,23,42,.6);padding:12px;border-radius:10px}
+  .kv span{display:block;color:#64748b;font-size:11.5px;margin-bottom:4px}
+  .kv strong{color:#e2e8f0;font-weight:600}
+  code{
+    font-family:Consolas,monospace;font-size:11.5px;color:#94a3b8;
+    word-break:break-all;background:rgba(15,23,42,.7);padding:8px 10px;
+    border-radius:6px;display:block;margin-top:8px;line-height:1.6;
+  }
+  .foot{text-align:center;font-size:12px;color:#475569;margin-top:28px;line-height:1.9}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="logo">
+      <svg width="48" height="48" viewBox="0 0 256 256" fill="none">
+        <circle cx="128" cy="60" r="17" stroke="#22d3ee" stroke-width="6" fill="#082f49"/>
+        <circle cx="64" cy="96" r="15" stroke="#22d3ee" stroke-width="6" fill="#082f49"/>
+        <circle cx="192" cy="96" r="15" stroke="#22d3ee" stroke-width="6" fill="#082f49"/>
+        <circle cx="96" cy="158" r="13" stroke="#22d3ee" stroke-width="6" fill="#082f49"/>
+        <circle cx="160" cy="158" r="13" stroke="#22d3ee" stroke-width="6" fill="#082f49"/>
+        <path d="M64 96L128 60L192 96M64 96L96 158M192 96L160 158M96 158H160M128 60V112"
+              stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>DGX 智能体</h1>
+    <div class="sub">部署在 NVIDIA DGX Spark 上的 AI 智能体平台 · Windows 客户端</div>
+  </div>
+
+  <div class="card">
+    <a class="btn" href="/static/DGX-Agent-Studio-Setup-v1.0.0.exe" download>
+      ⬇ 下载 Windows 安装包
+    </a>
+    <div class="meta">
+      <span>版本 <b>v1.0.0</b></span>
+      <span>大小 <b>113.9 KB</b></span>
+      <span>系统 <b>Windows 10 / 11</b></span>
+      <span>权限 <b>无需管理员</b></span>
+    </div>
+    <div class="note">
+      安装包体积极小（114 KB），因为它只是桌面入口 —— 模型和算力都在 DGX 服务器上，
+      不在你的电脑里跑。装完双击桌面图标即可使用。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>安装与使用</h2>
+    <ol>
+      <li>下载后双击 <b>DGX智能体_安装包_v1.0.0.exe</b></li>
+      <li>一路「下一步」（默认装到当前用户目录，不需要管理员权限）</li>
+      <li>完成后桌面出现 <b>DGX 智能体</b> 图标，双击打开</li>
+      <li>首次使用点「注册」，自己设用户名和密码</li>
+    </ol>
+    <div class="note">
+      <b>账号彼此独立</b>：每个人注册自己的账号，聊天记录、会话、文件互不可见。
+      注册即时生效，不需要任何人审批。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>技术信息</h2>
+    <div class="grid">
+      <div class="kv"><span>后端硬件</span><strong>NVIDIA DGX Spark (GB10)</strong></div>
+      <div class="kv"><span>模型</span><strong>Ollama 本地大模型</strong></div>
+      <div class="kv"><span>访问地址</span><strong>dgx-host.tail83f79e.ts.net</strong></div>
+      <div class="kv"><span>浏览器直连</span><strong>也可以直接用网页版</strong></div>
+    </div>
+    <code>SHA-256: 36149cdc8b4b8f19f43490da1a7865d1dc0137062f2303d8061ab091957a3a77</code>
+  </div>
+
+  <div class="foot">
+    打不开或安装失败？安装目录里有「诊断连接.cmd」，双击按提示排查。<br>
+    也可以直接在浏览器打开 <b>https://dgx-host.tail83f79e.ts.net/</b>
+  </div>
+
+</div>
+</body>
+</html>

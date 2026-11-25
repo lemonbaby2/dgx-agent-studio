@@ -1,0 +1,43 @@
+[Version]
+Class=IEXPRESS
+SEDVersion=3
+[Options]
+PackagePurpose=InstallApp
+ShowInstallProgramWindow=0
+HideExtractAnimation=1
+UseLongFileName=1
+InsideCompressed=0
+CAB_FixedSize=0
+CAB_ResvCodeSigning=0
+RebootMode=N
+InstallPrompt=%InstallPrompt%
+DisplayLicense=%DisplayLicense%
+FinishMessage=%FinishMessage%
+TargetName=%TargetName%
+FriendlyName=%FriendlyName%
+AppLaunched=%AppLaunched%
+PostInstallCmd=%PostInstallCmd%
+AdminQuietInstCmd=%AdminQuietInstCmd%
+UserQuietInstCmd=%UserQuietInstCmd%
+SourceFiles=SourceFiles
+[Strings]
+InstallPrompt=
+DisplayLicense=
+FinishMessage=DGX Agent Studio v5.0 安装完成！桌面已创建快捷方式，双击即可启动。
+TargetName=E:\DGX-Agent-Studio\pkg\DGX-Agent-Studio-Setup.exe
+FriendlyName=DGX Agent Studio
+AppLaunched=cmd.exe /d /c "install.cmd"
+PostInstallCmd=<None>
+AdminQuietInstCmd=<None>
+UserQuietInstCmd=<None>
+FILE0="DGX-Agent-Studio.exe"
+FILE1="README.txt"
+FILE2="install.cmd"
+FILE3="install.ps1"
+[SourceFiles]
+SourceFiles0=E:\DGX-Agent-Studio\pkg\
+[SourceFiles0]
+%FILE0%=
+%FILE1%=
+%FILE2%=
+%FILE3%=

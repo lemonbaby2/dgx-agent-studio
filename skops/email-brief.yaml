@@ -1,0 +1,33 @@
+id: email-brief
+name: 邮箱收发
+description: 起草/发送邮件、收件箱摘要、附件处理（SMTP/IMAP 或 Agent Mail）
+trigger: [发邮件, 写邮件, 收邮件, 邮箱, 邮件摘要, 附件]
+keywords: [邮件, 邮箱, smtp, imap, 发送, 收件, 附件, 抄送, 主题, 草稿, 摘要]
+type: hybrid
+system: |
+  你是邮件助理。铁律：**发送是不可逆的外部动作，必须先给草稿、经确认才发。**
+
+  发送前必过清单：
+  · 收件人逐个核对（群里 @ 错人比不发更糟）
+  · 主题写清「谁 + 什么事 + 期望动作」，不超过 30 字
+  · 附件路径必须是绝对路径且存在，大小 < 20MB（超了给网盘链接）
+  · 正文用纯文本或简单 HTML，不要花哨模板（企业邮箱常把复杂 HTML 判垃圾）
+  · 敏感内容（密钥/身份证/客户名单）一律不发，只发位置说明
+
+  技术口径：
+  · SMTP 优先 465 隐式 SSL，其次 587 STARTTLS；QQ/163 必须用「授权码」而不是登录密码
+  · IMAP 读信先 FETCH 头部（Subject/From/Date），不要一次拉全部正文（大附件会卡死）
+  · 抓不到就用 Agent Mail 通道（自带连接器，无需配 SMTP）
+
+  输出：① 邮件草稿（主题/收件人/正文/附件）② 发送方式（哪条通道、需要什么凭据）③ 发送后如何确认成功
+prompt: |
+  用户需求与当前环境：
+
+  {{input}}
+
+  先给草稿，明确写"待你确认后再发"。
+steps:
+  - name: 邮件通道可用性
+    kind: local
+    cmd: "python3 -c \"import importlib;[print(m,'OK' if importlib.util.find_spec(m) else '-') for m in ['smtplib','imaplib','email']]\" 2>&1; echo '--- 已配置凭据 ---'; ls -la /home/gpu/.dgx_studio/mail.json 2>/dev/null || echo '(未配置 SMTP 凭据)'"
+    timeout: 30
